@@ -179,6 +179,36 @@ namespace AtmWebAPI.Controllers
         }
 
 
+        [HttpGet("/{id}")]
+        public IActionResult GetTransactionHistory(int id)
+        {
+            var transactions = _context.Transactions
+                                    .Where(t => t.AccountId == id)
+                                    .OrderByDescending(t => t.Timestamp)
+                                    .ToList();
+
+            int balance = 0;
+            foreach (var trx in transactions)
+            {
+                if (trx.Type == "Deposit")
+                {
+                    balance += trx.Amount;
+                }
+                else if (trx.Type == "Withdraw")
+                {
+                    balance -= trx.Amount;
+                }
+            }
+
+            var result = new
+            {
+                TransactionsHistory = transactions,
+                Available = balance
+            };
+
+            return Ok(result);
+        }
+
 
         // DELETE: api/Accounts/5
         [HttpDelete("{id}")]
